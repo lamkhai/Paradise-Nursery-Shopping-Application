@@ -4,10 +4,11 @@ import { useDispatch } from "react-redux";
 import "./ProductList.css";
 import CartItem from "./CartItem";
 import { addItem } from "./CartSlice";
+import { useSelector } from "react-redux";
 
 function ProductList({ onHomeClick }) {
   const [showCart, setShowCart] = useState(false);
-  const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
+  const [showPlants, setShowPlants] = useState(false);
   const [addedToCart, setAddedToCart] = useState({});
   const dispatch = useDispatch();
 
@@ -274,6 +275,8 @@ function ProductList({ onHomeClick }) {
     textDecoration: "none",
   };
 
+  const cart = useSelector((state) => state.cart.items);
+
   const handleHomeClick = (e) => {
     e.preventDefault();
     onHomeClick();
@@ -281,28 +284,25 @@ function ProductList({ onHomeClick }) {
 
   const handleCartClick = (e) => {
     e.preventDefault();
-    setShowCart(true); // Set showCart to true when cart icon is clicked
+    setShowCart(true);
   };
   const handlePlantsClick = (e) => {
     e.preventDefault();
-    setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
-    setShowCart(false); // Hide the cart when navigating to About Us
+    setShowPlants(true);
+    setShowCart(false);
   };
 
   const handleAddToCart = (product) => {
-    dispatch(addItem(product)); // Dispatch the action to add the product to the cart (Redux action)
-
+    dispatch(addItem(product));
+    
     setAddedToCart((prevState) => ({
-      // Update the local state to reflect that the product has been added
-      ...prevState, // Spread the previous state to retain existing entries
-      [product.name]: true, // Set the current product's name as a key with value 'true' to mark it as added
+      ...prevState,
+      [product.name]: true,
     }));
   };
 
   const calculateTotalQuantity = () => {
-    return addedToCart.CartItems
-      ? addedToCart.CartItems.reduce((total, item) => total + item.quantity, 0)
-      : 0;
+    return cart.reduce((sum, item) => sum + item.quantity, 0);
   };
 
   const handleContinueShopping = () => {
@@ -316,7 +316,7 @@ function ProductList({ onHomeClick }) {
           <div className="luxury">
             <img
               src="https://cdn.pixabay.com/photo/2020/08/05/13/12/eco-5465432_1280.png"
-              alt=""
+              alt="Paradise Nursery Logo"
             />
             <a href="/" onClick={(e) => handleHomeClick(e)}>
               <div>
@@ -329,11 +329,11 @@ function ProductList({ onHomeClick }) {
         <div style={styleObjUl}>
           <div>
             {" "}
-            <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>
-              Plants
-            </a>
-          </div>
-          <div>
+          <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>
+            Plants
+          </a>
+        </div>
+        <div>
             {" "}
             <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
               <h1 className="cart">
@@ -382,17 +382,17 @@ function ProductList({ onHomeClick }) {
                     </div>
                     <div className="product-cost">{plant.cost}</div>
                     <button
-                      className="product-button"
+                      className={`product-button${
+                        cart.some((item) => item.name === plant.name)
+                          ? " added"
+                          : ""
+                      }`}
                       onClick={() => handleAddToCart(plant)}
-                      disabled={addedToCart[plant.name]}
-                      style={{
-                        backgroundColor: addedToCart[plant.name]
-                          ? "gray"
-                          : "#4CAF50",
-                        color: "white",
-                      }}
+                      disabled={cart.some((item) => item.name === plant.name)}
                     >
-                      Add to Cart
+                      {cart.some((item) => item.name === plant.name)
+                        ? "Added to Cart"
+                        : "Add to Cart"}
                     </button>
                   </div>
                 ))}
